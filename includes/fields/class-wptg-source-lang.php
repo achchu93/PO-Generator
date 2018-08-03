@@ -9,7 +9,6 @@ if ( ! class_exists( 'GFForms' ) ) {
 class WPTG_Source_Language_Field extends GF_Field_Select{
 
     public $type = "source_lang_select";
-    public $noDuplicates = true;
     public $isRequired = true;
     public $placeholder = "Select a source language";
     public $choices = array(

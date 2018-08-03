@@ -6,58 +6,46 @@ if ( ! class_exists( 'GFForms' ) ) {
 
 class WPTG_Target_Language_Field extends GF_Field_Select{
 
-    public $type;
-    public $choices;
-    public $noDuplicates;
-    public $isRequired;
-
-    /**
-     * WPTG_Source_Language_Field constructor.
-     */
-    public function __construct()
-    {
-        $this->noDuplicates = true;
-        $this->isRequired = true;
-        $this->type = "target_lang_select";
-        $this->choices = array(
-            array(
-                'text'       => 'EN',
-                'value'      => 'EN',
-                'isSelected' => false
-            ),
-            array(
-                'text'       => 'DE',
-                'value'      => 'DE',
-                'isSelected' => false
-            ),
-            array(
-                'text'       => 'FR',
-                'value'      => 'FR',
-                'isSelected' => false
-            ),
-            array(
-                'text'       => 'ES',
-                'value'      => 'ES',
-                'isSelected' => false
-            ),
-            array(
-                'text'       => 'IT',
-                'value'      => 'IT',
-                'isSelected' => false
-            ),
-            array(
-                'text'       => 'NL',
-                'value'      => 'NL',
-                'isSelected' => false
-            ),
-            array(
-                'text'       => 'PL',
-                'value'      => 'PL',
-                'isSelected' => false
-            )
-        );
-    }
-
+    public $type = "target_lang_select";
+    public $isRequired = true;
+    public $placeholder = "Select a source language";
+    public $choices = array(
+        array(
+            'text'       => 'EN',
+            'value'      => 'EN',
+            'isSelected' => false
+        ),
+        array(
+            'text'       => 'DE',
+            'value'      => 'DE',
+            'isSelected' => false
+        ),
+        array(
+            'text'       => 'FR',
+            'value'      => 'FR',
+            'isSelected' => false
+        ),
+        array(
+            'text'       => 'ES',
+            'value'      => 'ES',
+            'isSelected' => false
+        ),
+        array(
+            'text'       => 'IT',
+            'value'      => 'IT',
+            'isSelected' => false
+        ),
+        array(
+            'text'       => 'NL',
+            'value'      => 'NL',
+            'isSelected' => false
+        ),
+        array(
+            'text'       => 'PL',
+            'value'      => 'PL',
+            'isSelected' => false
+        )
+    );
 
     public function get_choices($value)
     {
