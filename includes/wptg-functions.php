@@ -1,16 +1,19 @@
 <?php
 
+if( !defined( 'ABSPATH' ) ) die();
+
 add_action('admin_menu', 'wptg_menu_page');
 add_action('admin_post', 'wptg_setting_save');
 add_action( 'admin_enqueue_scripts', 'wptg_enqueue_scripts' );
 add_filter('upload_mimes', 'add_po_mime_type', 1, 1);
 add_action( 'gform_after_submission', 'generate_translation', 10, 2 );
+add_action( 'gform_loaded', 'load_wptg_field', 1 );
 
 
 /**
  * add admin menu page
  */
-function wptg_menu_pages(){
+function wptg_menu_page(){
     add_menu_page('WP Translation Generator', 'Translation Generator', 'manage_options', 'translation-generator', 'wptg_settings_output', 'dashicons-editor-customchar' );
 }
 
@@ -20,6 +23,7 @@ function wptg_menu_pages(){
 function wptg_settings_output(){
     $selected = get_option('wptg_gravity_forms', array());
     $g_forms = GFAPI::get_forms();
+    //wptg_generate_file(WPTG_PATH . "lang/wc_crm-en.po", "FR");
 ?>
 
     <div id="wpbody-content">
@@ -111,4 +115,11 @@ function generate_translation($entry, $form ) {
     GFCommon::log_debug( 'gform_after_submission: response => ' . print_r( $entry, true ) );
 }
 
+
+function load_wptg_field(){
+
+    require_once("fields/class-wptg-source-lang.php");
+    require_once("fields/class-wptg-target-lang.php");
+    require_once("fields/class-wptg-po-file.php");
+}
 
