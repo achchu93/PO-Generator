@@ -8,7 +8,11 @@ add_action( 'admin_enqueue_scripts', 'wptg_enqueue_scripts' );
 add_filter('upload_mimes', 'add_po_mime_type', 1, 1);
 add_action( 'gform_after_submission', 'generate_translation', 10, 2 );
 add_action( 'gform_loaded', 'load_wptg_field', 1 );
+add_filter( 'gform_validation', 'wptg_gform_validation' );
+add_filter( 'gform_validation_message', 'change_message', 10, 2 );
 
+
+$errorMessage = "";
 
 /**
  * add admin menu page
@@ -23,7 +27,7 @@ function wptg_menu_page(){
 function wptg_settings_output(){
     $selected = get_option('wptg_gravity_forms', array());
     $g_forms = GFAPI::get_forms();
-    //wptg_generate_file(WPTG_PATH . "lang/wc_crm-en.po", "FR");
+    wptg_generate_file(WPTG_PATH . "lang/wc_crm-en.po", "FR");
 ?>
 
     <div id="wpbody-content">
@@ -110,9 +114,28 @@ function add_po_mime_type($mime_types){
  * @param $form
  */
 function generate_translation($entry, $form ) {
+    $po = "";
+    $tl = "";
+    $sl = "";
 
-    GFCommon::log_debug( 'gform_after_submission: body => ' . print_r( $form, true ) );
-    GFCommon::log_debug( 'gform_after_submission: response => ' . print_r( $entry, true ) );
+    foreach ($form['fields'] as $field){
+        if($field instanceof WPTG_PO_File_Input){
+            $po = rgar($entry, $field->id);
+        }
+        if($field instanceof  WPTG_Target_Language_Field){
+            $tl = rgar($entry, $field->id);
+        }
+        if($field instanceof WPTG_Source_Language_Field){
+            $sl = rgar($entry, $field->id);
+        }
+    }
+
+    $upload_path = GFFormsModel::get_upload_path( $form['id'] );
+    $upload_url = GFFormsModel::get_upload_url( $form['id'] );
+    $filename = str_replace( $upload_url, $upload_path, $po );
+
+    wptg_generate_file($filename, $tl, $sl);
+
 }
 
 
@@ -123,3 +146,50 @@ function load_wptg_field(){
     require_once("fields/class-wptg-po-file.php");
 }
 
+function wptg_gform_validation($validation_result){
+    global $errorMessage;
+    $form  = $validation_result['form'];
+    $entry = GFFormsModel::get_current_lead();
+    $el = array();
+    foreach ($form['fields'] as $field){
+        $id = $field->id;
+        $input = 'input_'.$id;
+
+        if($field instanceof WPTG_PO_File_Input){
+            array_push($el, 'WPTG_PO_File_Input');
+            if( !isset($_FILES[$input]) || $_FILES[$input]['error'] != 0){
+                $validation_result['is_valid'] = false;
+                $field->failed_validation = true;
+                $field->validation_message = 'PO file is required';
+            }
+        }
+
+        if($field instanceof WPTG_Target_Language_Field){
+            array_push($el, 'WPTG_Target_Language_Field');
+            if( empty(rgar($entry, $id)) ){
+                $validation_result['is_valid'] = false;
+                $field->failed_validation = true;
+                $field->validation_message = 'Target Language is required';
+            }
+        }
+    }
+
+    if(in_array('WPTG_PO_File_Input', $el) && !in_array('WPTG_Target_Language_Field', $el)){
+        var_dump($el);
+        $validation_result['is_valid'] = false;
+        $validation_result['form'] = $form;
+        $errorMessage = "PO File upload field requires Target language field";
+    }
+
+    return $validation_result;
+}
+
+function change_message( $message, $form ) {
+    global $errorMessage;
+
+    if(isset($errorMessage) && !empty($errorMessage)){
+        return "<div class='validation_error'>". $errorMessage ."</div>";
+    }
+    
+    return $message;
+}
